@@ -4,10 +4,10 @@ import path from 'path';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { uuid: string } }
+  { params }: { params: Promise<{ uuid: string }> }
 ) {
   try {
-    const { uuid } = params;
+    const { uuid } = await params;
     
     // Path to the CSV file
     const csvPath = path.join(process.cwd(), 'data.csv');
