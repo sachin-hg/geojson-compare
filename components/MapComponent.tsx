@@ -14,6 +14,7 @@ export default function MapComponent({ oldGeojson, newGeojson }: MapComponentPro
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const oldLayerRef = useRef<L.GeoJSON | null>(null);
   const newLayerRef = useRef<L.GeoJSON | null>(null);
+  const legendRef = useRef<L.Control | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -31,12 +32,15 @@ export default function MapComponent({ oldGeojson, newGeojson }: MapComponentPro
 
     const map = mapRef.current;
 
-    // Remove existing layers
+    // Remove existing layers and legend
     if (oldLayerRef.current) {
       map.removeLayer(oldLayerRef.current);
     }
     if (newLayerRef.current) {
       map.removeLayer(newLayerRef.current);
+    }
+    if (legendRef.current) {
+      map.removeControl(legendRef.current);
     }
 
     // Add old geometry (red)
@@ -80,23 +84,28 @@ export default function MapComponent({ oldGeojson, newGeojson }: MapComponentPro
     }
 
     // Add legend
-    const legend = L.control({ position: 'topright' });
-    legend.onAdd = function () {
-      const div = L.DomUtil.create('div', 'bg-white p-3 rounded shadow-lg');
-      div.innerHTML = `
-        <div class="text-sm font-semibold mb-2">Legend</div>
-        <div class="flex items-center mb-1">
-          <div class="w-4 h-4 bg-red-500 mr-2 border border-red-700"></div>
-          <span class="text-xs">Old Geometry</span>
-        </div>
-        <div class="flex items-center">
-          <div class="w-4 h-4 bg-blue-500 mr-2 border border-blue-700"></div>
-          <span class="text-xs">New Geometry</span>
-        </div>
-      `;
-      return div;
-    };
+    const LegendControl = L.Control.extend({
+      onAdd: function () {
+        const div = L.DomUtil.create('div', 'bg-white p-3 rounded shadow-lg');
+        div.style.cssText = 'background: white; padding: 12px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);';
+        div.innerHTML = `
+          <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Legend</div>
+          <div style="display: flex; align-items: center; margin-bottom: 4px;">
+            <div style="width: 16px; height: 16px; background: #ef4444; margin-right: 8px; border: 1px solid #dc2626;"></div>
+            <span style="font-size: 12px;">Old Geometry</span>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <div style="width: 16px; height: 16px; background: #3b82f6; margin-right: 8px; border: 1px solid #2563eb;"></div>
+            <span style="font-size: 12px;">New Geometry</span>
+          </div>
+        `;
+        return div;
+      },
+    });
+    
+    const legend = new LegendControl({ position: 'topright' });
     legend.addTo(map);
+    legendRef.current = legend;
 
     // Cleanup function
     return () => {
