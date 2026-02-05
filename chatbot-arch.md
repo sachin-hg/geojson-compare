@@ -335,6 +335,7 @@ updated_at TIMESTAMP
 
 ### 10.1 User Message → ML → FE (Happy Path)
 
+![Sequence Diagram](./sd1.png)
 ```
 sequenceDiagram
     participant FE as Web FE
@@ -353,7 +354,7 @@ sequenceDiagram
 ---
 
 ### 10.2 Timeout at BE (No ML Response)
-
+![Sequence Diagram](./sd2.png)
 ```
 sequenceDiagram
     participant FE
@@ -372,7 +373,7 @@ sequenceDiagram
 ---
 
 ### 10.3 Cancel by User
-
+![Sequence Diagram](./sd3.png)
 ```
 sequenceDiagram
     participant FE
@@ -394,6 +395,7 @@ sequenceDiagram
 ---
 
 ### 10.4 SSE Reconnect Flow
+![Sequence Diagram](./sd4.png)
 ```
 sequenceDiagram
     participant FE
