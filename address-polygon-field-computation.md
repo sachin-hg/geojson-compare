@@ -72,7 +72,7 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 | Service | Behaviour |
 |---------|-----------|
-| **Casa** | Not relevant. Do not touch `street_info`. |
+| **Casa** | Not touched; not used currently for rent/resale. |
 | **Venus** | Read from DB as today. **One-timer** (once for all India, then per state when we go live in that state): if **normalisedName(street_info)** ends with **normalisedName(locality[0] from ph_v2)**, then remove that locality[0] suffix from street_info (so street_info does not redundantly repeat locality). |
 
 ---
@@ -109,7 +109,7 @@ Until deprecation, behaviour:
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | **locality[0]** from ph_v2, **city[0]** from ph_v2. (Add short_address field in Casa if it does not exist.) |
+| **Casa** | **locality[0]** from ph_v2, **city[0]** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
 | **Venus** | **locality[0]** from ph_v2, **city[0]** from ph_v2. **TBD:** Finalise logic for DB’s **overridden_address** (when set, precedence and formatting to be discussed). |
 
 ---
@@ -151,8 +151,7 @@ Until deprecation, behaviour:
 **Structure:** Unchanged. Computed only in **Khoj** at response time.
 
 - **Formula:** **[region_entity_name for rent/resale when project is tagged to property]** + **short_address**.
-- Logic must be **same for project / rent / resale** (project tagged → prepend region_entity_name; then short_address).
-- **Presence of bounding_box (BB) in long_address must not break** SEO address (e.g. BB in long_address should be handled in link building / hierarchy).
+- ~~**Presence of bounding_box (BB) in long_address must not break** SEO address (e.g. BB in long_address should be handled in link building / hierarchy).~~ Since seo_address now uses short_address (which does not include BB), this should not be a problem for now.
 - For **states where the new changes are not live** (e.g. ph_v2 not yet used upstream), **seo_address logic must not break** — i.e. Khoj should still derive SEO address from whatever polygons_hash/address/long_address/short_address/bounding_box it receives.
 
 ---
@@ -179,7 +178,7 @@ Until deprecation, behaviour:
 | Field | Casa | Venus | Khoj |
 |-------|------|--------|------|
 | **polygons_hash** (API) | ph_v2 (ph_v1 + new_trail) | ph_v2 (ph_v1 + new_trail) | Pass-through from upstream |
-| **street_info** | Not touched | DB + one-timer cleanup | — |
+| **street_info** | Not touched; not used for rent/resale | DB + one-timer cleanup | — |
 | **long_address** | New: DB entity + sub_locality + ph_v2[0]s + proxy_city | DB street_info + ph_v2[0]s + proxy_city | Pass-through |
 | **address** (to be deprecated) | Same as long_address | Same as short_address | Pass-through |
 | **short_address** | locality[0]+city[0] from ph_v2 | locality[0]+city[0] from ph_v2; overridden_address TBD | Pass-through |
@@ -196,7 +195,7 @@ Until deprecation, behaviour:
 
 - **One-timer (Casa/Venus):** Update **primary_polygon** in DB when invalid (e.g. when going live in a state, for that state). **Venus:** Sync with CMS; run **analysis of invalid primary polygon count** before DB/CMS updates.
 - **One-timer (Venus):** **street_info** cleanup: remove trailing locality from normalisedName(street_info) (once all-India, then per state on go-live).
-- **Product decisions (done):** short_address = locality[0], city[0] from ph_v2 (Casa and Venus).
+- **Product decisions (done):** short_address = locality[0], city[0] from ph_v2 (Casa and Venus). **Casa:** short_address does not exist today; it must be added.
 - **TBD:** **Venus** — finalise **overridden_address** logic (when overridden_address is set, precedence and formatting).
 - **Deprecation:** **address** field is to be deprecated; until then Casa uses long_address, Venus uses short_address (see §3.3).
 
