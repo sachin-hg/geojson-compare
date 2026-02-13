@@ -70,18 +70,45 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 ### 3.2 long_address
 
-**Structure:** Unchanged (same list/array shape as today).
+**Structure:** Unchanged (same list/array shape as today). But "region_entity_name", "region_entity_id" added
+
+```json
+"long_address": [
+      {
+        "display_name": "Text text field filled by user",
+        "polygon_uuid": null // FE should handle null & undefined both
+      },
+      {
+        "region_entity_name": "Project Name",
+        "region_entity_id": 1234 // might be null as well
+      },
+      {
+        "display_name": "Polygon Name",
+        "polygon_uuid": "Polygon_Uuid"
+      },
+      {
+        "display_name": "Polygon Name 2",
+        "polygon_uuid": "Polygon_Uuid_2"
+      }
+    ]
+```
 
 | Service | Computation |
 |---------|-------------|
 | **Casa** | **New field in Casa** . Build list in order: (1) DB’s **region_entity_name**, (2) DB’s **region_sub_locality_uuid** , (3) **locality[0]** from ph_v2, (4) **region[0]** from ph_v2, (5) **city[0]** from ph_v2, (6) **bb[0]** from ph_v2 — if bb name ≠ city name, use **proxy_city mapping** for display/SEO as needed. Filter nulls. |
-| **Venus** | In order: (1) DB’s **street_info** is not null, (2) **selected_locality from step 2.1.2 above** if DB's  **street_info** is null, (3) **region[0]** from ph_v2, (4) **city[0]** from ph_v2, (5) **bb[0]** from ph_v2 — if bb name ≠ city name, apply proxy_city mapping. Filter nulls. **Basically logic remains the same, only BB is added, and source data is changed to ph_v2** |
+| **Venus** | In order: (1) DB’s **street_info** if not null, (2) **selected_locality from step 2.1.2 above** if DB's  **street_info** is null, (3) **region[0]** from ph_v2, (4) **city[0]** from ph_v2, (5) **bb[0]** from ph_v2 — if bb name ≠ city name, apply proxy_city mapping. Filter nulls. **Basically logic remains the same, only BB is added, and source data is changed to ph_v2** |
 
 ---
 
 ### 3.3 address **This field is to be deprecated.**
 
 **Structure:** Unchanged (same list/array shape as today). 
+
+```json
+"address": [
+      "Text 1", "Text 2"
+    ]
+```
 
 Until deprecation, behaviour:
 
@@ -94,6 +121,19 @@ Until deprecation, behaviour:
 
 ### 3.4 medium_address *New Field in casa/venus/khoj*
 
+```json
+"medium_address": [
+      {
+        "display_name": "Polygon Name",
+        "polygon_uuid": "Polygon_Uuid"
+      },
+      {
+        "display_name": "Polygon Name 2",
+        "polygon_uuid": "Polygon_Uuid_2"
+      }
+    ]
+```
+
 | Service | Computation |
 |---------|-------------|
 | **Casa** | DB's **region_sublocality_uuid** , **locality[0]** from ph_v2, **city[0] (if it's not a proxy city, else empty)** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
@@ -103,6 +143,19 @@ Until deprecation, behaviour:
 ### 3.4 short_address
 
 **Structure:** Unchanged (same shape as today).
+
+```json
+"short_address": [
+      {
+        "display_name": "Polygon Name",
+        "polygon_uuid": "Polygon_Uuid"
+      },
+      {
+        "display_name": "Polygon Name 2",
+        "polygon_uuid": "Polygon_Uuid_2"
+      }
+    ]
+```
 
 | Service | Computation |
 |---------|-------------|
@@ -147,6 +200,21 @@ Until deprecation, behaviour:
 
 **Structure:** Unchanged. Computed only in **Khoj** at response time.
 
+```json
+[
+  {
+    "name": "Project Name",
+    "href": "/in/buy/projects/page/45599-shapoorji-pallonji-vicinia-by-shapoorji-pallonji-real-estate-in-powai",
+    "type": "project"
+  },
+  {
+    "name": "Street info, polygon name 1, polygon name 2",
+    "href": "/in/buy/<BBName>/<polygon_name_1>", // href can be empty, null, undefined
+    "type": "locality"
+  }
+]  
+```
+
 - **Formula:** **[region_entity_name for rent/resale when project is tagged to property]** + **short_address**.
 - For **states where the new changes are not live** (e.g. ph_v2 not yet used upstream), **seo_address logic must not break** — i.e. Khoj should still derive SEO address from whatever polygons_hash/address/long_address/short_address/bounding_box it receives.
 
@@ -155,6 +223,12 @@ Until deprecation, behaviour:
 ### 3.9 display_neighbourhood (Khoj only)
 
 **Structure:** Unchanged. Computed only in **Khoj** at response time.
+
+```json
+[
+  "Text1", "Text 2"
+]  
+```
 
 - Use the **same logic as short_address**.
 
