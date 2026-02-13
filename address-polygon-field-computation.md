@@ -32,27 +32,18 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 ### 2.1 Building ph_v2
 
-1. **ph_v1**  
+#### 2.1.1. **ph_v1**  
    - Received from reverse_geocode as today. No change to the reverse_geocode contract or response.
 
-2. **Primary polygon**  
-   - **Casa:** `primary_polygon` = DB’s **`region_locality_uuid`**.  
-   - **Venus:** `primary_polygon` = DB’s **`primary_polygon_uuid`** OR DB’s **`locality`** (whichever is used today for “primary” locality).
+#### 2.1.2. **Selected locality**  
+   - **Casa:** `selected_locality` = DB’s **`region_locality_uuid`**.  
+   - **Venus:** `selected_locality` = DB’s **`primary_polygon_uuid`** OR DB’s **`locality`** (whichever is used today for “primary” locality).
 
-3. **Validate primary polygon**  
-   - Check: **feature_type === locality** AND **status === active** AND **property/project lat/lng lies within the polygon**.  
-   - **Venus:** If invalid, optionally try DB’s **`locality`** as primary polygon and validate the same way (c1).
-
-4. **If primary polygon is invalid**  
-   - Use **locality[0]** from reverse_geocode (ph_v1) as the effective primary polygon for this request.  
-   - **IDEALLY:** Run a **one-timer** to update the primary polygon in DB (e.g. whenever we go live in a state, for that state only).  
-   - **Venus:** One-timer and DB updates must keep CMS in sync; run **analysis of how many projects/properties have invalid primary polygon** before changing DB/CMS.
-
-5. **Fetch new_trail**  
-   - Call Regions **get-ancestor** (or new_trail) API for the **effective primary polygon** (from step 2/3 or 4).  
+#### 2.1.3. **Fetch new_trail**  
+   - Call Regions **get-ancestor** (or new_trail) API for the **effective selected_locality** (from step 2).  
    - For states where we are not yet live, **new_trail may be empty**.
 
-6. **Build ph_v2**  
+#### 2.1.4. **Build ph_v2**  
    - **ph_v2 = ph_v1 merged with new_trail.**  
    - Rule: **new_trail entries come first**; then append any from ph_v1 that are not already present for that polygon type.  
    - Per-type value remains a **list** (e.g. locality, city, bounding_box).  
@@ -73,7 +64,7 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 | Service | Behaviour |
 |---------|-----------|
 | **Casa** | Not touched; not used currently for rent/resale. |
-| **Venus** | Read from DB as today. **One-timer** (once for all India, then per state when we go live in that state): if **normalisedName(street_info)** ends with **normalisedName(locality[0] from ph_v2)**, then remove that locality[0] suffix from street_info (so street_info does not redundantly repeat locality). |
+| **Venus** | Read from DB as today. |
 
 ---
 
@@ -83,34 +74,40 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | **New field in Casa** (if not already present). Build list in order: (1) DB’s **getName(region_entity_uuid)**, (2) DB’s **region_sub_locality_uuid** (resolve how it is populated in DB and use that. this should ideally only be populated when seller has manually selected a sublocality on seller panel), (3) **locality[0]** from ph_v2, (4) **region[0]** from ph_v2, (5) **city[0]** from ph_v2, (6) **bb[0]** from ph_v2 — if bb name ≠ city name, use **proxy_city mapping** for display/SEO as needed. Filter nulls. |
-| **Venus** | In order: (1) DB’s **street_info** (after one-timer cleanup above), (2) **locality[0]** from ph_v2, (3) **region[0]** from ph_v2, (4) **city[0]** from ph_v2, (5) **bb[0]** from ph_v2 — if bb name ≠ city name, apply proxy_city mapping. Filter nulls. |
+| **Casa** | **New field in Casa** (if not already present). Build list in order: (1) DB’s **region_entity_name**, (2) DB’s **region_sub_locality_uuid** , (3) **locality[0]** from ph_v2, (4) **region[0]** from ph_v2, (5) **city[0]** from ph_v2, (6) **bb[0]** from ph_v2 — if bb name ≠ city name, use **proxy_city mapping** for display/SEO as needed. Filter nulls. |
+| **Venus** | In order: (1) DB’s **street_info** is not null, (2) **selected_locality from step 2.1.2 above** if DB's  **street_info** is null, (3) **region[0]** from ph_v2, (4) **city[0]** from ph_v2, (5) **bb[0]** from ph_v2 — if bb name ≠ city name, apply proxy_city mapping. Filter nulls. **Basically logic remains the same, only BB is added, and source data is changed to ph_v2** |
 
 ---
 
-### 3.3 address
+### 3.3 address **This field is to be deprecated.**
 
-**Structure:** Unchanged (same list/array shape as today). **This field is to be deprecated.**
+**Structure:** Unchanged (same list/array shape as today). 
 
 Until deprecation, behaviour:
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | Same as **long_address** for Casa (DB’s getName(region_entity_uuid), region_sub_locality_uuid, locality[0], region[0], city[0], bb[0] from ph_v2, proxy_city when needed). |
-| **Venus** | Same as **short_address** for Venus (locality[0], city[0] from ph_v2; overridden_address logic TBD). |
+| **Casa** | Same as **long_address** for Casa. |
+| **Venus** | Same as **short_address** for Venus. |
 
 ---
 
+### 3.4 medium_address *New Field in casa/venus/khoj*
+
+| Service | Computation |
+|---------|-------------|
+| **Casa** | DB's **region_sublocality_uuid** , **locality[0]** from ph_v2, **city[0] (if it's not a proxy city, else empty)** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
+| **Venus** | **selected_locality from step 2.1.2 above**, **city[0]** from ph_v2. **TBD:** Finalise logic for DB’s **overridden_address** (when set, precedence and formatting to be discussed). |
+
+---
 ### 3.4 short_address
 
 **Structure:** Unchanged (same shape as today).
 
-**Product decision:** short_address = **locality[0], city[0]** from ph_v2.
-
 | Service | Computation |
 |---------|-------------|
-| **Casa** | **locality[0]** from ph_v2, **city[0]** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
-| **Venus** | **locality[0]** from ph_v2, **city[0]** from ph_v2. **TBD:** Finalise logic for DB’s **overridden_address** (when set, precedence and formatting to be discussed). |
+| **Casa** | **locality[0]** from ph_v2, **city[0] (if it's not a proxy city, else empty)** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
+| **Venus** | **selected_locality from step 2.1.2 above**, **city[0]** from ph_v2. **TBD:** Finalise logic for DB’s **overridden_address** (when set, precedence and formatting to be discussed). |
 
 ---
 
@@ -120,8 +117,8 @@ Until deprecation, behaviour:
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | Same logic as today, but use **ph_v2** instead of ph_v1 (i.e. primary polygon selection from ph_v2 using existing POLYGON_TYPES / primary order). |
-| **Venus** | Same logic as today, but use **ph_v2** instead of ph_v1. |
+| **Casa** | Same logic as today, but use **ph_v2** instead of ph_v1. |
+| **Venus** | if present: **selected_locality from step 2.1.2 above**, else: Same logic as today, but use **ph_v2** instead of ph_v1. |
 
 ---
 
@@ -132,7 +129,7 @@ Until deprecation, behaviour:
 | Service | Computation |
 |---------|-------------|
 | **Casa** | Same logic as today, but use **ph_v2** instead of ph_v1. |
-| **Venus** | Use **city from new_trail** if available; otherwise use existing logic (with ph_v2). |
+| **Venus** | Same logic as today, but use **ph_v2** instead of ph_v1. |
 
 ---
 
@@ -146,12 +143,11 @@ Until deprecation, behaviour:
 
 ---
 
-### 3.8 seo_address (Khoj only)
+### 3.8 seo_address (Khoj only) **This field is to be deprecated.**
 
 **Structure:** Unchanged. Computed only in **Khoj** at response time.
 
 - **Formula:** **[region_entity_name for rent/resale when project is tagged to property]** + **short_address**.
-- ~~**Presence of bounding_box (BB) in long_address must not break** SEO address (e.g. BB in long_address should be handled in link building / hierarchy).~~ Since seo_address now uses short_address (which does not include BB), this should not be a problem for now.
 - For **states where the new changes are not live** (e.g. ph_v2 not yet used upstream), **seo_address logic must not break** — i.e. Khoj should still derive SEO address from whatever polygons_hash/address/long_address/short_address/bounding_box it receives.
 
 ---
@@ -160,7 +156,7 @@ Until deprecation, behaviour:
 
 **Structure:** Unchanged. Computed only in **Khoj** at response time.
 
-- Use the **same logic as short_address**: derive display_neighbourhood from **locality[0]** and **city[0]** from ph_v2. So display_neighbourhood mirrors the **short_address** hierarchy (from ph_v2 when upstream sends it).
+- Use the **same logic as short_address**.
 
 ---
 
@@ -173,38 +169,10 @@ Until deprecation, behaviour:
 
 ---
 
-## 4. Summary table (source of computation)
+## 4. One-timers and product confirmations
 
-| Field | Casa | Venus | Khoj |
-|-------|------|--------|------|
-| **polygons_hash** (API) | ph_v2 (ph_v1 + new_trail) | ph_v2 (ph_v1 + new_trail) | Pass-through from upstream |
-| **street_info** | Not touched; not used for rent/resale | DB + one-timer cleanup | — |
-| **long_address** | New: DB entity + sub_locality + ph_v2[0]s + proxy_city | DB street_info + ph_v2[0]s + proxy_city | Pass-through |
-| **address** (to be deprecated) | Same as long_address | Same as short_address | Pass-through |
-| **short_address** | locality[0]+city[0] from ph_v2 | locality[0]+city[0] from ph_v2; overridden_address TBD | Pass-through |
-| **polygon_data.primary_polygon_uuid** | Existing logic with ph_v2 | Existing logic with ph_v2 | Pass-through |
-| **polygon_data.parent_polygon_uuid** | Existing logic with ph_v2 | city from new_trail else existing, with ph_v2 | Pass-through |
-| **polygon_uuids / polygon_uuid_array** | ph_v2 UUIDs + DB (align with Venus if needed) | ph_v2 UUIDs + DB primary_polygon + project.polygonUuids | Pass-through |
-| **seo_address** | — | — | region_entity_name (when project tagged) + short_address; same for project/rent/resale; non-live states must not break |
-| **display_neighbourhood** | — | — | Same as short_address (locality[0], city[0] from ph_v2) |
-| **bounding_box, city_select_uuid, others** | Same logic, ph_v2 | Same logic, ph_v2 | Pass-through |
-
----
-
-## 5. One-timers and product confirmations
-
-- **One-timer (Casa/Venus):** Update **primary_polygon** in DB when invalid (e.g. when going live in a state, for that state). **Venus:** Sync with CMS; run **analysis of invalid primary polygon count** before DB/CMS updates.
-- **One-timer (Venus):** **street_info** cleanup: remove trailing locality from normalisedName(street_info) (once all-India, then per state on go-live).
-- **Product decisions (done):** short_address = locality[0], city[0] from ph_v2 (Casa and Venus). **Casa:** short_address does not exist today; it must be added.
 - **TBD:** **Venus** — finalise **overridden_address** logic (when overridden_address is set, precedence and formatting).
-- **Deprecation:** **address** field is to be deprecated; until then Casa uses long_address, Venus uses short_address (see §3.3).
-
----
-
-## 6. Regions API
-
-- **reverse_geocode:** Already used; no contract change. Output is ph_v1.
-- **new_trail:** New API or **modified get-ancestor API** that returns the same structure as needed for the merge (polygon type → list of polygon objects). If get-ancestor already returns a trail in that form, extend/reuse it; otherwise add a dedicated new_trail API.
+- **Deprecation:** **address**, **seo_address** field is to be deprecated; until then Casa uses long_address, Venus uses short_address (see §3.3).
 
 ---
 
