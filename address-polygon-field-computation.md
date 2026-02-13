@@ -74,7 +74,7 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | **New field in Casa** (if not already present). Build list in order: (1) DB’s **region_entity_name**, (2) DB’s **region_sub_locality_uuid** , (3) **locality[0]** from ph_v2, (4) **region[0]** from ph_v2, (5) **city[0]** from ph_v2, (6) **bb[0]** from ph_v2 — if bb name ≠ city name, use **proxy_city mapping** for display/SEO as needed. Filter nulls. |
+| **Casa** | **New field in Casa** . Build list in order: (1) DB’s **region_entity_name**, (2) DB’s **region_sub_locality_uuid** , (3) **locality[0]** from ph_v2, (4) **region[0]** from ph_v2, (5) **city[0]** from ph_v2, (6) **bb[0]** from ph_v2 — if bb name ≠ city name, use **proxy_city mapping** for display/SEO as needed. Filter nulls. |
 | **Venus** | In order: (1) DB’s **street_info** is not null, (2) **selected_locality from step 2.1.2 above** if DB's  **street_info** is null, (3) **region[0]** from ph_v2, (4) **city[0]** from ph_v2, (5) **bb[0]** from ph_v2 — if bb name ≠ city name, apply proxy_city mapping. Filter nulls. **Basically logic remains the same, only BB is added, and source data is changed to ph_v2** |
 
 ---
