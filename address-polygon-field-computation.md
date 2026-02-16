@@ -238,7 +238,7 @@ Until deprecation, behaviour:
 ]  
 ```
 
-- **Formula:** ```{name: region_entity_name, href: getCanonical(region_entity_id) || "", type: region_entity_type}```, ```{name: short_address.map(x => x.display_name).join(', '), href: getCanonical(short_address.findFirstNotNull(x => x.polygon_uuid)), type: "locality"}```
+- **Formula:** ```{name: region_entity_name, href: getCanonical(region_entity_id) || "", type: region_entity_type}```, ```{name: short_address.map(x => x.display_name).join(', '), href: getCanonical(short_address.findFirstNotNull(x => x.polygon_uuid)), type: "locality"}```. Filter nulls by ```name``` only.
 - For **states where the new changes are not live** (e.g. ph_v2 not yet used upstream), **seo_address logic must not break** — i.e. Khoj should still derive SEO address from whatever polygons_hash/address/long_address/short_address/bounding_box it receives.
 
 ---
