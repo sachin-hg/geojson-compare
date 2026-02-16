@@ -194,7 +194,7 @@ Until deprecation, behaviour:
 | Service | Computation |
 |---------|-------------|
 | **Casa** | Same logic as today, but use **ph_v2** instead of ph_v1. |
-| **Venus** | if present: **selected_locality from step 2.1.2 above**, else: Same logic as today, but use **ph_v2** instead of ph_v1. |
+| **Venus** | if present: ```selected_locality``` from step ```2.1.2``` above**, else: Same logic as today, but use ```ph_v2``` instead of ph_v1. |
 
 ---
 
@@ -238,7 +238,7 @@ Until deprecation, behaviour:
 ]  
 ```
 
-- **Formula:** **[region_entity_name for rent/resale when project is tagged to property]** + **short_address**.
+- **Formula:** ```{name: region_entity_name, href: getCanonical(region_entity_id) || "", type: region_entity_type}```, ```{name: short_address.map(x => x.display_name).join(', '), href: getCanonical(short_address.findFirstNotNull(x => x.polygon_uuid)), type: "locality"}```
 - For **states where the new changes are not live** (e.g. ph_v2 not yet used upstream), **seo_address logic must not break** — i.e. Khoj should still derive SEO address from whatever polygons_hash/address/long_address/short_address/bounding_box it receives.
 
 ---
@@ -253,7 +253,7 @@ Until deprecation, behaviour:
 ]  
 ```
 
-- Use the **same logic as short_address, but reversed**.
+- Use the ```short_address.reversee().map(x => x.display_name)```.
 
 ---
 
@@ -267,8 +267,6 @@ Until deprecation, behaviour:
 ---
 
 ## 4. One-timers and product confirmations
-
-- **TBD:** **Venus** — finalise **overridden_address** logic (when overridden_address is set, precedence and formatting).
 - **Deprecation:** **address**, **seo_address** field is to be deprecated; until then Casa uses long_address, Venus uses short_address (see §3.3).
 
 ---
