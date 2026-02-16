@@ -137,7 +137,7 @@ Until deprecation, behaviour:
 | Service | Computation |
 |---------|-------------|
 | **Casa** | DB's **region_sublocality_uuid** , **locality[0]** from ph_v2, **city[0] (if it's not a proxy city, else empty)** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
-| **Venus** | **selected_locality from step 2.1.2 above**, **city[0]** from ph_v2. **TBD:** Finalise logic for DB’s **overridden_address** (when set, precedence and formatting to be discussed). |
+| **Venus** | DB’s **overridden_address**  when available else: **selected_locality from step 2.1.2 above**, **city[0]** from ph_v2. |
 
 ---
 ### 3.4 short_address
@@ -160,7 +160,7 @@ Until deprecation, behaviour:
 | Service | Computation |
 |---------|-------------|
 | **Casa** | **locality[0]** from ph_v2, **city[0] (if it's not a proxy city, else empty)** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
-| **Venus** | **selected_locality from step 2.1.2 above**, **city[0]** from ph_v2. **TBD:** Finalise logic for DB’s **overridden_address** (when set, precedence and formatting to be discussed). |
+| **Venus** | DB’s **overridden_address**  when available else: **selected_locality from step 2.1.2 above**, **city[0]** from ph_v2. |
 
 ---
 
