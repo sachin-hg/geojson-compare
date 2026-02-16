@@ -58,7 +58,24 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 ---
 
 ## 3. Components
-   - region_entity_name: Venus: null, Casa: Db's ```region_entity_name```
+   - ```region_entity_name```: Venus: null, Casa: Db's ```region_entity_name```
+   - ```region_entity_id```: Venus: null, Casa: Db's ```region_entity_id```
+   - ```region_entity_type```: Venus: null, Casa:  if ```region_entity_id !== null``` then: Db's ```region_entity_type```, else: ```locality```
+   - ```sub_locality```: Venus: null, Casa: Db's ```region_sublocality_uuid```
+   - ```sub_locality_name```: ```sublocalityUuid ? getNameFromRegionService(sublocalityUuid) : null```
+   - ```selected_locality```: as described in step **2.1.2** above
+   - ```selected_locality_name```: getNameFromRegionService(selected_locality)
+   - ```region```: ```housing_region[0].uuid``` from ```ph_v2```
+   - ```region_name```: ```housing_region[0].name``` from ```ph_v2```
+   - ```city```: ```city[0].uuid```  from ```ph_v2```
+   - ```city_name```: ```city[0].name```  from ```ph_v2```
+   - ```non_proxy_city```  ```city[0].uuid```  from ```ph_v2``` if it's **not a proxyCity**
+   - ```non_proxy_city_name```  ```city[0].name```  from ```ph_v2``` if it's **not a proxyCity**
+   - ```bb```:  ```bb[0].name !== city[0].name ? bb[0].uuid : null```  from ```ph_v2```
+   - ```bb_name```:  ```bb[0].name !== city[0].name ? bb[0].name : null```  from ```ph_v2```
+   - ```street_info```: Db's ```street_info```
+   - ```overridden_address```: Casa: null, Venus: Db's ```overridden_address```
+   
 
 ## 3. Field-by-field computation
 
@@ -79,27 +96,31 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 "long_address": [
       {
         "display_name": "Text text field filled by user",
-        "polygon_uuid": null // FE should handle null & undefined both
+        "polygon_uuid": null, // FE should handle null & undefined both,
+        "region_entity_id": null
       },
       {
-        "region_entity_name": "Project Name",
-        "region_entity_id": 1234 // might be null as well
+        "display_name": "Project Name", // applicable only for rent/resale listings tagged to a project
+        "polygon_uuid": null,
+        "region_entity_id": 1234 // might be null as well. applicable only for rent/resale listings tagged to a project
       },
       {
         "display_name": "Polygon Name",
-        "polygon_uuid": "Polygon_Uuid"
+        "polygon_uuid": "Polygon_Uuid",
+        "region_entity_id": null
       },
       {
         "display_name": "Polygon Name 2",
-        "polygon_uuid": "Polygon_Uuid_2"
+        "polygon_uuid": "Polygon_Uuid_2",
+        "region_entity_id": null
       }
     ]
 ```
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | **New field in Casa** . Build list in order: (1) DB’s **region_entity_name**, (2) DB’s **region_sub_locality_uuid** , (3) **locality[0]** from ph_v2, (4) **region[0]** from ph_v2, (5) **city[0]** from ph_v2, (6) **bb[0]** from ph_v2 — if bb name ≠ city name, use **proxy_city mapping** for display/SEO as needed. Filter nulls. |
-| **Venus** | In order: (1) DB’s **street_info** if not null, (2) **selected_locality from step 2.1.2 above** if DB's  **street_info** is null, (3) **region[0]** from ph_v2, (4) **city[0]** from ph_v2, (5) **bb[0]** from ph_v2 — if bb name ≠ city name, apply proxy_city mapping. Filter nulls. **Basically logic remains the same, only BB is added, and source data is changed to ph_v2** |
+| **Casa** | **New field in Casa** . Build list in order: ```{display_name: region_entity_name, region_entity_id}```, ```{display_name: sub_locality_name, polygon_uuid: sub_locality}```, ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: region_name, polygon_uuid: region}```, ```{display_name: city_name, polygon_uuid: city}```, ```{display_name: bb_name, polygon_uuid: bb}```. **Filter nulls by display_name only**. |
+| **Venus** | In order:  ```{display_name: street_info ? street_info : selected_locality_name}```, ```{display_name: region_name, polygon_uuid: region}```, ```{display_name: city_name, polygon_uuid: city}```, ```{display_name: bb_name, polygon_uuid: bb}```. **Filter nulls by display_name only**. **Basically logic remains the same, only BB is added, and source data is changed to ph_v2** |
 
 ---
 
@@ -117,8 +138,8 @@ Until deprecation, behaviour:
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | Same as **long_address** for Casa. |
-| **Venus** | Same as **short_address** for Venus. |
+| **Casa** | ```long_address.map( x => x.display_name )``` for Casa. |
+| **Venus** | ```short_address.map( x => x.display_name )``` for Venus. |
 
 ---
 
@@ -128,7 +149,7 @@ Until deprecation, behaviour:
 "medium_address": [
       {
         "display_name": "Polygon Name",
-        "polygon_uuid": "Polygon_Uuid"
+        "polygon_uuid": "Polygon_Uuid" // can be null, undefined, empty
       },
       {
         "display_name": "Polygon Name 2",
@@ -139,8 +160,8 @@ Until deprecation, behaviour:
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | DB's **region_sublocality_uuid** , **locality[0]** from ph_v2, **city[0] (if it's not a proxy city, else empty)** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
-| **Venus** | DB’s **overridden_address**  when available else: **selected_locality from step 2.1.2 above**, **city[0]** from ph_v2. |
+| **Casa** |  ```{display_name: sub_locality_name, polygon_uuid: sub_locality}```, ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: non_proxy_city_name, polygon_uuid: non_proxy_city}```. **short_address does not exist in Casa today; it must be added.** |
+| **Venus** | if Db's```overridden_address !== null``` ```{display_name: overridden_address, polygon_uuid: null}``` else  ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: non_proxy_city_name, polygon_uuid: non_proxy_city}`` |
 
 ---
 ### 3.4 short_address
@@ -163,7 +184,7 @@ Until deprecation, behaviour:
 | Service | Computation |
 |---------|-------------|
 | **Casa** | **locality[0]** from ph_v2, **city[0] (if it's not a proxy city, else empty)** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
-| **Venus** | DB’s **overridden_address**  when available else: **selected_locality from step 2.1.2 above**, **city[0]** from ph_v2. |
+| **Venus** |  if Db's```overridden_address !== null``` ```{display_name: overridden_address, polygon_uuid: null}``` else  ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: non_proxy_city_name, polygon_uuid: non_proxy_city}`` |
 
 ---
 
