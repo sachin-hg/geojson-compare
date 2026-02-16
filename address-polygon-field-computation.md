@@ -67,9 +67,9 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
    - ```region_name```: ```housing_region[0].name``` from ```ph_v2```
    - ```city```: ```city[0].uuid```  from ```ph_v2```
    - ```city_name```: ```city[0].name```  from ```ph_v2```
-   - ```non_proxy_city```: id ```isProxyCity(city[0].uuid) ``` ? ```city[0].uuid``` : ```null```.  from ```ph_v2```
-   - ```non_proxy_city_name```: id ```isProxyCity(city[0].uuid) ``` ? ```city[0].name``` : ```null```.  from ```ph_v2```
-   - ```bb```:  ```bb[0].name !== city[0].name ? bb[0].uuid : null```  from ```ph_v2```
+   - ```non_proxy_city```: if ```isProxyCity(city[0].uuid) ``` ? ```city[0].uuid``` : ```null```.  from ```ph_v2```
+   - ```non_proxy_city_name```: if ```isProxyCity(city[0].uuid) ``` ? ```city[0].name``` : ```null```.  from ```ph_v2```
+   - ```bb```:  ```bb[0].uuid```  from ```ph_v2```
    - ```bb_name```:  ```bb[0].name !== city[0].name ? bb[0].name : null```  from ```ph_v2```
    - ```street_info```: Db's ```street_info```
    - ```overridden_address```: Casa: null, Venus: Db's ```overridden_address```
@@ -160,7 +160,7 @@ Until deprecation, behaviour:
 | Service | Computation |
 |---------|-------------|
 | **Casa** |  ```{display_name: sub_locality_name, polygon_uuid: sub_locality}```, ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: non_proxy_city_name, polygon_uuid: non_proxy_city}```. **short_address does not exist in Casa today; it must be added.** |
-| **Venus** | if Db's```overridden_address !== null``` ```{display_name: overridden_address, polygon_uuid: null}``` else  ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: non_proxy_city_name, polygon_uuid: non_proxy_city}`` |
+| **Venus** | if Db's```overridden_address !== null``` ```{display_name: overridden_address, polygon_uuid: null}``` else  ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: city_name, polygon_uuid: city}``` |
 
 ---
 ### 3.4 short_address
