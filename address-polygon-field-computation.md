@@ -220,7 +220,7 @@ Until deprecation, behaviour:
 
 ---
 
-### 3.9 display_neighbourhood (Khoj only)
+### 3.9 display_neighbourhood (Khoj only) Deprecated field
 
 **Structure:** Unchanged. Computed only in **Khoj** at response time.
 
@@ -230,7 +230,7 @@ Until deprecation, behaviour:
 ]  
 ```
 
-- Use the **same logic as short_address**.
+- Use the **same logic as short_address, but reversed**.
 
 ---
 
