@@ -254,6 +254,7 @@ Until deprecation, behaviour:
 ```
 
 - Use the ```short_address.reversee().map(x => x.display_name)```.
+- Fallback logic: **Handle cases where we are not yet live for a state**
 
 ---
 
