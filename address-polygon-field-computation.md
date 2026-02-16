@@ -37,7 +37,7 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 #### 2.1.2. **Selected locality**  
    - **Casa:** `selected_locality` = DB’s **`region_locality_uuid`**.  
-   - **Venus:** `selected_locality` = DB’s **`primary_polygon_uuid`** OR DB’s **`locality`** (whichever is used today for “primary” locality).
+   - **Venus:** `selected_locality` = DB’s **`primary_polygon_uuid`** OR DB’s **`locality`** (whichever is used today for “primary” locality). Note that this might not be same as ```ph_v2.locality[0]```
 
 #### 2.1.3. **Fetch new_trail**  
    - Call Regions **get-ancestor** (or new_trail) API for the **effective selected_locality** (from step 2).  
@@ -55,27 +55,26 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 **API:** Response still has **`polygons_hash`** with the same structure; internally it is populated from **ph_v2** (so ph_v2 is what gets cached and returned).
 
----
-
-## 3. Components
+## 2.2. Components
    - ```region_entity_name```: Venus: null, Casa: Db's ```region_entity_name```
    - ```region_entity_id```: Venus: null, Casa: Db's ```region_entity_id```
    - ```region_entity_type```: Venus: null, Casa:  if ```region_entity_id !== null``` then: Db's ```region_entity_type```, else: ```locality```
    - ```sub_locality```: Venus: null, Casa: Db's ```region_sublocality_uuid```
-   - ```sub_locality_name```: ```sublocalityUuid ? getNameFromRegionService(sublocalityUuid) : null```
+   - ```sub_locality_name```: ```sub_locality ? getNameFromRegionService(sub_locality) : null```
    - ```selected_locality```: as described in step **2.1.2** above
-   - ```selected_locality_name```: getNameFromRegionService(selected_locality)
+   - ```selected_locality_name```: ```getNameFromRegionService(selected_locality)```
    - ```region```: ```housing_region[0].uuid``` from ```ph_v2```
    - ```region_name```: ```housing_region[0].name``` from ```ph_v2```
    - ```city```: ```city[0].uuid```  from ```ph_v2```
    - ```city_name```: ```city[0].name```  from ```ph_v2```
-   - ```non_proxy_city```  ```city[0].uuid```  from ```ph_v2``` if it's **not a proxyCity**
-   - ```non_proxy_city_name```  ```city[0].name```  from ```ph_v2``` if it's **not a proxyCity**
+   - ```non_proxy_city```: id ```isProxyCity(city[0].uuid) ``` ? ```city[0].uuid``` : ```null```.  from ```ph_v2```
+   - ```non_proxy_city_name```: id ```isProxyCity(city[0].uuid) ``` ? ```city[0].name``` : ```null```.  from ```ph_v2```
    - ```bb```:  ```bb[0].name !== city[0].name ? bb[0].uuid : null```  from ```ph_v2```
    - ```bb_name```:  ```bb[0].name !== city[0].name ? bb[0].name : null```  from ```ph_v2```
    - ```street_info```: Db's ```street_info```
    - ```overridden_address```: Casa: null, Venus: Db's ```overridden_address```
-   
+
+---
 
 ## 3. Field-by-field computation
 
@@ -90,7 +89,7 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 ### 3.2 long_address
 
-**Structure:** Unchanged (same list/array shape as today). But "region_entity_name", "region_entity_id" added
+**Structure:** Unchanged (same list/array shape as today). But new field ```region_entity_id``` added
 
 ```json
 "long_address": [
@@ -120,7 +119,7 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 | Service | Computation |
 |---------|-------------|
 | **Casa** | **New field in Casa** . Build list in order: ```{display_name: region_entity_name, region_entity_id}```, ```{display_name: sub_locality_name, polygon_uuid: sub_locality}```, ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: region_name, polygon_uuid: region}```, ```{display_name: city_name, polygon_uuid: city}```, ```{display_name: bb_name, polygon_uuid: bb}```. **Filter nulls by display_name only**. |
-| **Venus** | In order:  ```{display_name: street_info ? street_info : selected_locality_name}```, ```{display_name: region_name, polygon_uuid: region}```, ```{display_name: city_name, polygon_uuid: city}```, ```{display_name: bb_name, polygon_uuid: bb}```. **Filter nulls by display_name only**. **Basically logic remains the same, only BB is added, and source data is changed to ph_v2** |
+| **Venus** | In order:  ```{display_name: street_info ? street_info : selected_locality_name, polygon_uuid: street_info ? null : selected_locality}```, ```{display_name: region_name, polygon_uuid: region}```, ```{display_name: city_name, polygon_uuid: city}```, ```{display_name: bb_name, polygon_uuid: bb}```. **Filter nulls by display_name only**. **Basically logic remains the same, only BB is added, and source data is changed to ph_v2** |
 
 ---
 
