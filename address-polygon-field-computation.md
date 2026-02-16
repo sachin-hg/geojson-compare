@@ -160,7 +160,7 @@ Until deprecation, behaviour:
 | Service | Computation |
 |---------|-------------|
 | **Casa** |  ```{display_name: sub_locality_name, polygon_uuid: sub_locality}```, ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: non_proxy_city_name, polygon_uuid: non_proxy_city}```. **short_address does not exist in Casa today; it must be added.** |
-| **Venus** | if Db's```overridden_address !== null``` ```{display_name: overridden_address, polygon_uuid: null}``` else  ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: city_name, polygon_uuid: city}``` |
+| **Venus** | same as ```short_address``` for venus |
 
 ---
 ### 3.4 short_address
@@ -182,8 +182,8 @@ Until deprecation, behaviour:
 
 | Service | Computation |
 |---------|-------------|
-| **Casa** | **locality[0]** from ph_v2, **city[0] (if it's not a proxy city, else empty)** from ph_v2. **short_address does not exist in Casa today; it must be added.** |
-| **Venus** |  if Db's```overridden_address !== null``` ```{display_name: overridden_address, polygon_uuid: null}``` else  ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: non_proxy_city_name, polygon_uuid: non_proxy_city}`` |
+| **Casa** | ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: city_name, polygon_uuid: city}```. **short_address does not exist in Casa today; it must be added.** |
+| **Venus** |  if Db's```overridden_address !== null``` ```{display_name: overridden_address, polygon_uuid: null}``` else  ```{display_name: selected_locality_name, polygon_uuid: selected_locality}```, ```{display_name: city_name, polygon_uuid: city}``` |
 
 ---
 
