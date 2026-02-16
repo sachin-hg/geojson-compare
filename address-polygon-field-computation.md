@@ -232,7 +232,7 @@ Until deprecation, behaviour:
   },
   {
     "name": "Street info, polygon name 1, polygon name 2",
-    "href": "/in/buy/<BBName>/<polygon_name_1>", // href can be empty, null, undefined
+    "href": "/in/buy/<canonical_url_of_polygon_from_seo>", // href can be empty, null, undefined
     "type": "locality"
   }
 ]  
