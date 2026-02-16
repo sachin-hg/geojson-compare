@@ -57,6 +57,9 @@ The API continues to expose **`polygons_hash`** (same key and structure). Intern
 
 ---
 
+## 3. Components
+   - region_entity_name: Venus: null, Casa: Db's ```region_entity_name```
+
 ## 3. Field-by-field computation
 
 ### 3.1 street_info
