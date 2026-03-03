@@ -1,14 +1,5 @@
 # Address & Polygon Field Computation (at Source + Khoj)
-- [x] Done
-- [ ] Pending
 
-> [!NOTE]
-> Important info
-
-
-$$
-\int_0^1 x^2 dx
-$$
 This document defines **how address and polygon-related fields will be computed** after the new logic is implemented. Computation happens **at source** (Casa and Venus); only Khoj-specific fields (`seo_address`, `display_neighbourhood`) have custom logic in Khoj.
 
 **Constraints:**
