@@ -5,7 +5,8 @@
 ## 1-Year Growth
 11.43%
 ## Available Properties
-188
+anc
+
 ---
 ## Price Range
 - Minimum – ₹5,666 / sq ft
@@ -19,6 +20,7 @@
 ---
 ## Latest Update
 Q1 2026 – ₹11,850 / sq ft
+
 ---
 This data helps you make informed property decisions.
 
