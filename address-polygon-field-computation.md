@@ -23,7 +23,7 @@ This document defines **how address and polygon-related fields will be computed*
 
 ---
 
-## 2. polygons_hash: ph_v1 → ph_v2
+## 2. polygons_hash: ph_v1 →  ph_v2
 
 The API continues to expose **`polygons_hash`** (same key and structure). Internally we distinguish:
 
